@@ -14,9 +14,10 @@ function attachGyroListener() {
     // gamma = left/right tilt (-90…90), beta = front/back tilt (-180…180)
     const gamma = e.gamma ?? 0   // maps to X axis
     const beta  = e.beta  ?? 0   // maps to Y axis
-    // Clamp to a comfortable tilt range and normalise to -1…1
-    gyro.x = Math.max(-1, Math.min(1, gamma / 30))
-    gyro.y = Math.max(-1, Math.min(1, (beta - 30) / 40)) // offset 30° for natural hold
+    // Clamp to a comfortable tilt range and normalise to -1…1.
+    // Smaller divisors = full effect reached with a smaller physical tilt.
+    gyro.x = Math.max(-1, Math.min(1, gamma / 18))
+    gyro.y = Math.max(-1, Math.min(1, (beta - 30) / 26)) // offset 30° for natural hold
     gyro.active = true
   }, { passive: true })
 }
@@ -30,7 +31,8 @@ function isMobileGyro() {
   )
 }
 
-// iOS 13+ requires explicit permission
+// iOS 13+ requires explicit permission. Throws instead of failing silently so
+// the caller can show real feedback (denied, blocked by browser, etc.)
 async function requestGyroPermission(): Promise<boolean> {
   const DOE = DeviceOrientationEvent as unknown as {
     requestPermission?: () => Promise<string>
@@ -42,56 +44,100 @@ async function requestGyroPermission(): Promise<boolean> {
   return true // Android / older iOS — no permission needed
 }
 
-// Small floating button that requests gyro permission on iOS
-function GyroPermissionButton() {
-  const [needed, setNeeded] = useState(false)
-  const [granted, setGranted] = useState(false)
+// Resolves once a real 'deviceorientation' reading comes in, or false if none
+// arrives in time (some in-app browsers/WebViews grant permission but never
+// actually deliver sensor events).
+function waitForGyroData(timeoutMs = 2500): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (gyro.active) {
+      resolve(true)
+      return
+    }
+    const start = performance.now()
+    const check = () => {
+      if (gyro.active) {
+        resolve(true)
+      } else if (performance.now() - start > timeoutMs) {
+        resolve(false)
+      } else {
+        requestAnimationFrame(check)
+      }
+    }
+    requestAnimationFrame(check)
+  })
+}
 
+// No visible UI: quietly enables the gyroscope as soon as it can.
+//
+// - Android/Brave-Android/etc. (no permission API): attaches immediately on
+//   mount, no interaction required.
+// - iOS 13+ (permission API present): WebKit only allows the permission
+//   prompt to be triggered by a real, trusted user gesture — it cannot be
+//   requested purely on page load. So instead of a dedicated button, this
+//   listens for the visitor's very first tap/click/keypress anywhere on the
+//   page and fires the request then, invisibly. From the user's perspective
+//   gyro just "turns on" the moment they start interacting with the site.
+function useAutoEnableGyro() {
   useEffect(() => {
     if (!isMobileGyro()) return
-    const DOE = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
-    if (typeof DOE.requestPermission === "function") {
-      setNeeded(true) // iOS 13+ needs the button
-    } else {
-      // Android — attach immediately, no button needed
-      attachGyroListener()
-      setGranted(true)
+
+    if (!window.isSecureContext) {
+      // Device sensors are blocked entirely on non-HTTPS origins.
+      console.warn(
+        "[gyro] Page is not served over HTTPS — device orientation is blocked by the browser."
+      )
     }
-  }, [])
 
-  if (!needed || granted) return null
+    const DOE = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
 
-  return (
-    <button
-      onClick={async () => {
-        const ok = await requestGyroPermission()
-        if (ok) {
-          attachGyroListener()
-          setGranted(true)
-          setNeeded(false)
+    if (typeof DOE.requestPermission !== "function") {
+      // No explicit permission gate — attach right away.
+      attachGyroListener()
+      waitForGyroData().then((ok) => {
+        if (!ok) {
+          console.warn(
+            "[gyro] Listener attached but no readings arrived — sensor is likely blocked by the browser " +
+              "(e.g. Brave Shields' device-recognition/fingerprint protection, or an in-app browser)."
+          )
         }
-      }}
-      style={{
-        position: "fixed",
-        bottom: "1.5rem",
-        right: "1.5rem",
-        zIndex: 100,
-        backgroundColor: "var(--accent)",
-        color: "var(--background)",
-        border: "none",
-        borderRadius: "9999px",
-        padding: "0.6rem 1rem",
-        fontSize: "0.75rem",
-        fontFamily: "monospace",
-        cursor: "pointer",
-        opacity: 0.9,
-        boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
-      }}
-      aria-label="Enable gyroscope animations"
-    >
-      ✦ Enable Gyro
-    </button>
-  )
+      })
+      return
+    }
+
+    // iOS: wait for the first real user gesture, then request permission.
+    let done = false
+    const tryEnable = async () => {
+      if (done) return
+      done = true
+      cleanup()
+      try {
+        const ok = await requestGyroPermission()
+        if (!ok) {
+          console.warn("[gyro] Permission denied by user.")
+          return
+        }
+        attachGyroListener()
+        const gotData = await waitForGyroData()
+        if (!gotData) {
+          console.warn("[gyro] Permission granted but no orientation data arrived.")
+        }
+      } catch (err) {
+        console.error("[gyro] permission request failed:", err)
+      }
+    }
+
+    const cleanup = () => {
+      window.removeEventListener("pointerdown", tryEnable)
+      window.removeEventListener("touchend", tryEnable)
+      window.removeEventListener("keydown", tryEnable)
+    }
+
+    window.addEventListener("pointerdown", tryEnable, { once: true, passive: true })
+    window.addEventListener("touchend", tryEnable, { once: true, passive: true })
+    window.addEventListener("keydown", tryEnable, { once: true })
+
+    return cleanup
+  }, [])
 }
 
 const PROJECTS = [
@@ -488,17 +534,17 @@ function ProjectCard({ project }: { project: typeof PROJECTS[0] }) {
         tgtX = gyro.x
         tgtY = gyro.y
       }
-      curX += (tgtX - curX) * 0.08
-      curY += (tgtY - curY) * 0.08
+      curX += (tgtX - curX) * 0.12
+      curY += (tgtY - curY) * 0.12
 
-      const rotY = curX * 6
-      const rotX = -curY * 6
-      const tx = curX * 6
-      const ty = curY * 6
+      const rotY = curX * 10
+      const rotX = -curY * 10
+      const tx = curX * 10
+      const ty = curY * 10
       el.style.transform = `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) translate(${tx}px, ${ty}px)`
 
-      const shadowX = -curX * 5
-      const shadowY = -curY * 3
+      const shadowX = -curX * 8
+      const shadowY = -curY * 5
       el.style.filter = `drop-shadow(${shadowX.toFixed(2)}px ${shadowY.toFixed(2)}px 8px rgba(0,0,0,0.25))`
 
       rafRef.current = requestAnimationFrame(tick)
@@ -606,17 +652,17 @@ function LiteratureCard({
         tgtX = gyro.x
         tgtY = gyro.y
       }
-      curX += (tgtX - curX) * 0.08
-      curY += (tgtY - curY) * 0.08
+      curX += (tgtX - curX) * 0.12
+      curY += (tgtY - curY) * 0.12
 
-      const rotY = curX * 6
-      const rotX = -curY * 6
-      const tx = curX * 6
-      const ty = curY * 6
+      const rotY = curX * 10
+      const rotX = -curY * 10
+      const tx = curX * 10
+      const ty = curY * 10
       el.style.transform = `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) translate(${tx}px, ${ty}px)`
 
-      const shadowX = -curX * 5
-      const shadowY = -curY * 3
+      const shadowX = -curX * 8
+      const shadowY = -curY * 5
       el.style.filter = `drop-shadow(${shadowX.toFixed(2)}px ${shadowY.toFixed(2)}px 8px rgba(0,0,0,0.25))`
 
       rafRef.current = requestAnimationFrame(tick)
@@ -759,16 +805,16 @@ function FloatingChips({
 
       const cur = currentRef.current
       const tgt = targetRef.current
-      cur.x += (tgt.x - cur.x) * 0.09
-      cur.y += (tgt.y - cur.y) * 0.09
+      cur.x += (tgt.x - cur.x) * 0.13
+      cur.y += (tgt.y - cur.y) * 0.13
 
       itemRefs.current.forEach((el, i) => {
         if (!el) return
         const chip = FLOAT_CHIPS[i]
         const driftX = Math.sin(elapsed / 2600 + chip.phase * 10) * 4
         const driftY = Math.cos(elapsed / 3100 + chip.phase * 10) * 4
-        const px = cur.x * 70 * chip.depth + driftX
-        const py = cur.y * 70 * chip.depth + driftY
+        const px = cur.x * 110 * chip.depth + driftX
+        const py = cur.y * 110 * chip.depth + driftY
         el.style.transform = `translate(${px}px, ${py}px)`
       })
 
@@ -1258,17 +1304,17 @@ function AboutSection() {
         tgtX = gyro.x
         tgtY = gyro.y
       }
-      curX += (tgtX - curX) * 0.08
-      curY += (tgtY - curY) * 0.08
+      curX += (tgtX - curX) * 0.12
+      curY += (tgtY - curY) * 0.12
 
-      const rotY = curX * 6
-      const rotX = -curY * 6
-      const tx = curX * 6
-      const ty = curY * 6
+      const rotY = curX * 10
+      const rotX = -curY * 10
+      const tx = curX * 10
+      const ty = curY * 10
       chart.style.transform = `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) translate(${tx}px, ${ty}px)`
 
-      const shadowX = -curX * 5
-      const shadowY = -curY * 3
+      const shadowX = -curX * 8
+      const shadowY = -curY * 5
       chart.style.filter = `drop-shadow(${shadowX.toFixed(2)}px ${shadowY.toFixed(2)}px 8px rgba(0,0,0,0.25))`
 
       chartInstanceRef.current.raf = requestAnimationFrame(tick)
@@ -1381,6 +1427,7 @@ function AboutSection() {
 }
 
 export default function App() {
+  useAutoEnableGyro()
   const [dark, setDark] = useState(false)
   const [showMoreProjects, setShowMoreProjects] = useState(false)
   const [showMoreLiterature, setShowMoreLiterature] = useState(false)
@@ -1473,19 +1520,19 @@ export default function App() {
         tgtX = gyro.x
         tgtY = gyro.y
       }
-      curX += (tgtX - curX) * 0.08
-      curY += (tgtY - curY) * 0.08
+      curX += (tgtX - curX) * 0.12
+      curY += (tgtY - curY) * 0.12
 
-      const rotY = curX * 6
-      const rotX = -curY * 6
-      const tx = curX * 6
-      const ty = curY * 6
+      const rotY = curX * 10
+      const rotX = -curY * 10
+      const tx = curX * 10
+      const ty = curY * 10
       title.style.transform = `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) translate(${tx}px, ${ty}px)`
 
       const titleColor = getComputedStyle(title).color
       const titleRgb = titleColor.match(/\d+/g)
-      const tsx = -curX * 5
-      const tsy = -curY * 3
+      const tsx = -curX * 8
+      const tsy = -curY * 5
       if (titleRgb) {
         const [r, g, b] = titleRgb
         const shadows = Array.from({ length: 5 }, (_, k) => {
@@ -1497,16 +1544,16 @@ export default function App() {
       }
 
       if (button) {
-        const bRotY = curX * 10
-        const bRotX = -curY * 10
-        const btx = curX * 8
-        const bty = curY * 8
+        const bRotY = curX * 16
+        const bRotX = -curY * 16
+        const btx = curX * 13
+        const bty = curY * 13
         button.style.transform = `perspective(400px) rotateX(${bRotX}deg) rotateY(${bRotY}deg) translate(${btx}px, ${bty}px)`
 
         const btnBg = getComputedStyle(button).backgroundColor
         const btnRgb = btnBg.match(/\d+/g)
-        const bsx = -curX * 8
-        const bsy = -curY * 5
+        const bsx = -curX * 13
+        const bsy = -curY * 8
         if (btnRgb) {
           const [r, g, b] = btnRgb
           const boxShadows = Array.from({ length: 5 }, (_, k) => {
@@ -2012,7 +2059,6 @@ export default function App() {
       {selectedArticle && (
         <ArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
       )}
-      <GyroPermissionButton />
     </div>
   )
 }
