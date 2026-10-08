@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from "react"
 import cvPdf from "./assets/Sulav_Bhatta_CV.pdf"
 
-// ---------------------------------------------------------------------------
-// Gyroscope singleton — shared across all animation loops
-// ---------------------------------------------------------------------------
 const gyro = { x: 0, y: 0, active: false }
 let gyroListenerAttached = false
 
@@ -11,18 +8,14 @@ function attachGyroListener() {
   if (gyroListenerAttached) return
   gyroListenerAttached = true
   window.addEventListener("deviceorientation", (e: DeviceOrientationEvent) => {
-    // gamma = left/right tilt (-90…90), beta = front/back tilt (-180…180)
-    const gamma = e.gamma ?? 0   // maps to X axis
-    const beta  = e.beta  ?? 0   // maps to Y axis
-    // Clamp to a comfortable tilt range and normalise to -1…1.
-    // Smaller divisors = full effect reached with a smaller physical tilt.
+    const gamma = e.gamma ?? 0   
+    const beta  = e.beta  ?? 0   
     gyro.x = Math.max(-1, Math.min(1, gamma / 18))
-    gyro.y = Math.max(-1, Math.min(1, (beta - 30) / 26)) // offset 30° for natural hold
+    gyro.y = Math.max(-1, Math.min(1, (beta - 30) / 26)) 
     gyro.active = true
   }, { passive: true })
 }
 
-// Detect whether the device likely has a gyroscope (touch + orientation API)
 function isMobileGyro() {
   return (
     typeof window !== "undefined" &&
@@ -31,8 +24,6 @@ function isMobileGyro() {
   )
 }
 
-// iOS 13+ requires explicit permission. Throws instead of failing silently so
-// the caller can show real feedback (denied, blocked by browser, etc.)
 async function requestGyroPermission(): Promise<boolean> {
   const DOE = DeviceOrientationEvent as unknown as {
     requestPermission?: () => Promise<string>
@@ -41,12 +32,9 @@ async function requestGyroPermission(): Promise<boolean> {
     const result = await DOE.requestPermission()
     return result === "granted"
   }
-  return true // Android / older iOS — no permission needed
+  return true 
 }
 
-// Resolves once a real 'deviceorientation' reading comes in, or false if none
-// arrives in time (some in-app browsers/WebViews grant permission but never
-// actually deliver sensor events).
 function waitForGyroData(timeoutMs = 2500): Promise<boolean> {
   return new Promise((resolve) => {
     if (gyro.active) {
@@ -67,22 +55,11 @@ function waitForGyroData(timeoutMs = 2500): Promise<boolean> {
   })
 }
 
-// No visible UI: quietly enables the gyroscope as soon as it can.
-//
-// - Android/Brave-Android/etc. (no permission API): attaches immediately on
-//   mount, no interaction required.
-// - iOS 13+ (permission API present): WebKit only allows the permission
-//   prompt to be triggered by a real, trusted user gesture — it cannot be
-//   requested purely on page load. So instead of a dedicated button, this
-//   listens for the visitor's very first tap/click/keypress anywhere on the
-//   page and fires the request then, invisibly. From the user's perspective
-//   gyro just "turns on" the moment they start interacting with the site.
 function useAutoEnableGyro() {
   useEffect(() => {
     if (!isMobileGyro()) return
 
     if (!window.isSecureContext) {
-      // Device sensors are blocked entirely on non-HTTPS origins.
       console.warn(
         "[gyro] Page is not served over HTTPS — device orientation is blocked by the browser."
       )
@@ -91,20 +68,17 @@ function useAutoEnableGyro() {
     const DOE = DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
 
     if (typeof DOE.requestPermission !== "function") {
-      // No explicit permission gate — attach right away.
       attachGyroListener()
       waitForGyroData().then((ok) => {
         if (!ok) {
           console.warn(
-            "[gyro] Listener attached but no readings arrived — sensor is likely blocked by the browser " +
-              "(e.g. Brave Shields' device-recognition/fingerprint protection, or an in-app browser)."
+            "[gyro] Listener attached but no readings arrived — sensor is likely blocked by the browser."
           )
         }
       })
       return
     }
 
-    // iOS: wait for the first real user gesture, then request permission.
     let done = false
     const tryEnable = async () => {
       if (done) return
@@ -193,8 +167,7 @@ const EXTRA_PROJECTS = [
     title: "Null",
     year: "0",
     tag: "Null",
-    description:
-      "Null",
+    description: "Null",
     tech: ["np.Nan", "np.Nan"],
     github: "https://github.com/b-sulav",
     live: null,
@@ -204,91 +177,12 @@ const EXTRA_PROJECTS = [
     title: "Null",
     year: "0",
     tag: "Null",
-    description:
-      "Null",
+    description: "Null",
     tech: ["np.Nan", "np.Nan"],
     github: "https://github.com/b-sulav",
     live: null,
   },
 ]
-
-// const LITERATURE = [
-//   {
-//     id: 1,
-//     title: "Fornlorn Reminisces",
-//     tag: "Poem",
-//     date: "Aug 2026",
-//     excerpt:
-//       "Bring down the skies,\nshatter heaven to pieces.",
-//     readTime: "1 min",
-//     link: "#",
-//     body:
-//       "Bring down the skies,\nshatter heaven to pieces.\nWalk upon tombs, graves\nFor a pile of yearning kisses.\n\nBurn hell to the ground,\nand every place it reaches.\nA Sanctuary for hopeless romantics\nand a shrine for forlorn reminisces.\n\nMuch needed compassion,\nA tearful, weary heart.\nLife teaching a lesson,\nAnd us falling apart.",
-//   },
-//   {
-//     id: 2,
-//     title: "के हुन्थ्यो होला?",
-//     tag: "Poem",
-//     date: "July 2026",
-//     excerpt:
-//       "यदि हृदयमा बग्दैनथ्यो भावनाको धारा।\nकहाँ जान्थे होला यी थाकेका हारा? ",
-//     readTime: "2 min",
-//     link: "#",
-//     body:
-//       "यदि हृदयमा बग्दैनथ्यो भावनाको धारा।\nयदि मस्तिष्कमा हुँदैनथ्यो मानवताको बास।\nकहाँ जान्थे होला यी थाकेका हारा?\nयदि हुँदैनथ्यो अस्तित्वको आस्थामा साहस।\n\nयदि कल्पनाको हुँदैनथ्यो कुनै वास्तविक अन्त्य।\nयदि पलको अन्धकारले रित्याउँदैनथ्यो विश्वास।\nके हुन्थ्यो होला पश्चात्तापी जीवनको सत्य?\nयदि हतासमा हुँदैनथ्यो मृत्युको आभास।",
-//   },
-//   {
-//     id: 3,
-//     title: "A burning florist ",
-//     tag: "Poem",
-//     date: "Nov 2025",
-//     excerpt:
-//       "I stood still as the fierce fire of longing raged,\nas the petals of mourning burned.",
-//     readTime: "1 min",
-//     link: "#",
-//     body:
-//       "I stood still as the fierce fire of longing raged,\nas the petals of mourning burned.\n\nI stood still and seemingly fazed,\nas the sepals of belonging darkened,\nas the smoke engulfed.\n\nI stood still as I gasped,\nas I was left lone,\nas there remained nothing but ashes,\nI stood still.",
-//   },
-//   {
-//     id: 4,
-//     title: "A dark night",
-//     tag: "Poem",
-//     date: "Jan 2025",
-//     excerpt:
-//       "The darkness of my shadow strives\nas I discover, a different me within myself.",
-//     readTime: "1 min",
-//     link: "#",
-//     body:
-//       "The darkness of my shadow strives\nas I discover, a different me within myself.\nliving in obscurity with gloomy eyes\nit has a gaze worth fright.\n\nThe light reaches every nook and corner\nyet fails to shine upon that silhouette,\nsome pleased by the ethereal beauty\nyet others are scared of its tenebrosity.\n",
-//   },
-// ]
-
-// const EXTRA_LITERATURE = [
-//   {
-//     id: 5,
-//     title: "तिमी",
-//     tag: "Poem",
-//     date: "Nov 2024",
-//     excerpt:
-//       "जीवनको हरेक पलमा छौ तिमी,\nसरिरको कण-कणमा छौ तिमी.",
-//     readTime: "2 min",
-//     link: "#",
-//     body:
-//       "जीवनको हरेक पलमा छौ तिमी,\nसरिरको कण-कणमा छौ तिमी.\nसासमा तिमी हरेक गासमा तिमी,\nविस्वास मर्दाको मेरो लासमा तिमी.\n\nपिडाको आगोमा जल्दै चिताको बासमा तिमी,\nभविष्य सम्म को यो इतिहासमा तिमी.\nस्वयम जीवनदेखि मृत्युसम्म,\nसुखदेखि नास सम्म केवल तिमी नै तिमी.",
-//   },
-//   {
-//     id: 6,
-//     title: "My love for you",
-//     tag: "Poem",
-//     date: "Sep 2023",
-//     excerpt:
-//       "My love for you is like a tattered, \nold canvas awaiting to be splashed with\nthe colours of life.",
-//     readTime: "2 min",
-//     link: "#",
-//     body:
-//       "My love for you is like a tattered, \nold canvas awaiting to be splashed with\nthe colours of life. \n\nMy love for you is like an old, \nfeeble man with eyes yet intact with, \nthe blaze of passion. \n\nMy love for you is like a starved, \npitiful stray still clenching onto,\nthe sparkle of hope.\n\nMy love for you is like a wilting,\nunnourished plant with faith in,\nthe miracles of heaven.",
-//   },
-// ]
 
 function Sun() {
   return (
@@ -327,106 +221,6 @@ function Moon() {
     >
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-    >
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
-  )
-}
-
-function ArticleModal({
-  article,
-  onClose,
-}: {
-  article: (typeof LITERATURE)[0]
-  onClose: () => void
-}) {
-  if (!article) return null
-
-  return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-6"
-      style={{ backgroundColor: "rgba(15, 15, 15, 0.82)" }}
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto border"
-        style={{
-          backgroundColor: "var(--background)",
-          borderColor: "var(--border)",
-          borderRadius: "16px",
-          padding: "clamp(1.25rem, 5vw, 2.5rem) clamp(1rem, 5vw, 2.25rem)",
-          color: "var(--foreground)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 inline-flex items-center justify-center rounded-full border bg-transparent p-2 transition-colors hover:bg-[var(--border)]"
-          style={{
-            color: "var(--foreground)",
-            borderColor: "var(--border)",
-            cursor: "pointer",
-          }}
-          aria-label="Close article"
-        >
-          <CloseIcon />
-        </button>
-
-        <div className="flex items-center gap-3 mb-4">
-          <span
-            className="font-mono-code text-xs uppercase tracking-widest"
-            style={{ color: "var(--accent)" }}
-          >
-            {article.tag}
-          </span>
-          <span
-            className="font-mono-code text-xs"
-            style={{ color: "var(--text-dim-2)" }}
-          >
-            {article.date}
-          </span>
-        </div>
-
-        <h2
-          className="font-display mb-4"
-          style={{
-            fontSize: "clamp(1.6rem, 4vw, 2.4rem)",
-            fontWeight: 700,
-            lineHeight: 1.2,
-          }}
-        >
-          {article.title}
-        </h2>
-
-        <p
-          className="font-mono-code text-sm mb-6"
-          style={{ color: "var(--text-dim-2)" }}
-        >
-          {article.readTime}
-        </p>
-
-        <p
-          className="font-display text-base leading-relaxed whitespace-pre-line"
-          style={{ color: "var(--foreground)" }}
-        >
-          {article.body}
-        </p>
-      </div>
-    </div>
   )
 }
 
@@ -613,115 +407,6 @@ function ProjectCard({ project }: { project: typeof PROJECTS[0] }) {
   )
 }
 
-function LiteratureCard({
-  item,
-  onOpen,
-}: {
-  item: (typeof LITERATURE)[0]
-  onOpen?: () => void
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const rafRef = useRef<number>(0)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    let curX = 0,
-      curY = 0,
-      tgtX = 0,
-      tgtY = 0
-
-    let mouseOver = false
-
-    const handleMove = (e: MouseEvent) => {
-      mouseOver = true
-      const rect = el.getBoundingClientRect()
-      tgtX = ((e.clientX - rect.left) / rect.width - 0.5) * 2
-      tgtY = ((e.clientY - rect.top) / rect.height - 0.5) * 2
-    }
-
-    const handleLeave = () => {
-      mouseOver = false
-      tgtX = 0
-      tgtY = 0
-    }
-
-    const tick = () => {
-      if (!mouseOver && gyro.active) {
-        tgtX = gyro.x
-        tgtY = gyro.y
-      }
-      curX += (tgtX - curX) * 0.12
-      curY += (tgtY - curY) * 0.12
-
-      const rotY = curX * 10
-      const rotX = -curY * 10
-      const tx = curX * 10
-      const ty = curY * 10
-      el.style.transform = `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) translate(${tx}px, ${ty}px)`
-
-      const shadowX = -curX * 8
-      const shadowY = -curY * 5
-      el.style.filter = `drop-shadow(${shadowX.toFixed(2)}px ${shadowY.toFixed(2)}px 8px rgba(0,0,0,0.25))`
-
-      rafRef.current = requestAnimationFrame(tick)
-    }
-
-    el.addEventListener("mousemove", handleMove)
-    el.addEventListener("mouseleave", handleLeave)
-    rafRef.current = requestAnimationFrame(tick)
-
-    return () => {
-      el.removeEventListener("mousemove", handleMove)
-      el.removeEventListener("mouseleave", handleLeave)
-      cancelAnimationFrame(rafRef.current)
-      el.style.transform = ""
-      el.style.filter = ""
-    }
-  }, [])
-
-  return (
-    <article
-      ref={ref}
-      className="h-full p-5 sm:p-[2.25rem] flex flex-col gap-5 border"
-      style={{ borderColor: "var(--border)", transformStyle: "preserve-3d" }}
-    >
-      <div className="flex-1">
-        <h3 className="font-display text-2xl sm:text-4xl mb-4">{item.title}</h3>
-        <p
-          className="text-lg leading-relaxed"
-          style={{
-            color: "var(--text-dim-2)",
-            fontStyle: item.tag === "Poem" ? "italic" : "normal",
-          }}
-        >
-          {item.excerpt}
-        </p>
-      </div>
-      <div className="flex items-center justify-between">
-        <span
-          className="font-mono-code text-sm"
-          style={{ color: "var(--text-dim-2)" }}
-        >
-          {item.readTime}
-        </span>
-        <a
-          href={item.link}
-          onClick={(e) => {
-            e.preventDefault()
-            onOpen?.()
-          }}
-          className="font-mono-code text-sm"
-          style={{ color: "var(--accent)" }}
-        >
-          Read →
-        </a>
-      </div>
-    </article>
-  )
-}
-
 const SKILLS = [
   { label: "Python", value: 0.9 },
   { label: "Data Analytics", value: 0.85 },
@@ -865,7 +550,6 @@ const NAV_SECTIONS = [
   "home",
   "about",
   "selected-work",
-  "curated-words",
 ] as const
 
 const HERO_PLAIN = "Building with data. "
@@ -1336,7 +1020,6 @@ function AboutSection() {
   return (
     <section id="about" ref={sectionRef} style={{ scrollMarginTop: "3.5rem" }}>
       <Container className="py-14 sm:py-24">
-        {/* Mobile section label */}
         <div className="flex sm:hidden mb-8">
           <span
             className="font-mono-code text-2xl font-bold tracking-[0.2em]"
@@ -1430,7 +1113,6 @@ export default function App() {
   useAutoEnableGyro()
   const [dark, setDark] = useState(false)
   const [showMoreProjects, setShowMoreProjects] = useState(false)
-  const [showMoreLiterature, setShowMoreLiterature] = useState(false)
   const [activeSection, setActiveSection] = useState<string>("home")
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -1441,7 +1123,6 @@ export default function App() {
   const [typedCount, setTypedCount] = useState(0)
   const [showBackground, setShowBackground] = useState(false)
   const [backgroundVisible, setBackgroundVisible] = useState(false)
-  const [selectedArticle, setSelectedArticle] = useState<(typeof LITERATURE)[0] | null>(null)
 
   const handleScroll = () => {
     setScrolled(window.scrollY > 20)
@@ -1592,19 +1273,6 @@ export default function App() {
   }, [dark])
 
   useEffect(() => {
-    if (!selectedArticle) return
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedArticle(null)
-    }
-    document.addEventListener("keydown", handleKey)
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.removeEventListener("keydown", handleKey)
-      document.body.style.overflow = ""
-    }
-  }, [selectedArticle])
-
-  useEffect(() => {
     handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
@@ -1659,7 +1327,6 @@ export default function App() {
             Sulav Bhatta
           </button>
 
-          {/* Desktop nav links */}
           <ul className="hidden sm:flex items-center gap-6">
             {NAV_SECTIONS.map((id) => (
               <li key={id}>
@@ -1674,11 +1341,7 @@ export default function App() {
                     fontWeight: activeSection === id ? 500 : 400,
                   }}
                 >
-                  {id === "selected-work"
-                    ? "Projects"
-                    : id === "curated-words"
-                      ? "Literature"
-                      : id}
+                  {id === "selected-work" ? "Projects" : id}
                 </button>
               </li>
             ))}
@@ -1686,7 +1349,6 @@ export default function App() {
 
           <div className="flex items-center gap-4">
             <ThemeToggle dark={dark} toggle={() => setDark(!dark)} />
-            {/* Hamburger — mobile only */}
             <button
               className="sm:hidden flex flex-col justify-center items-center gap-[5px] w-8 h-8 focus:outline-none"
               aria-label="Toggle menu"
@@ -1726,7 +1388,6 @@ export default function App() {
           </div>
         </nav>
 
-        {/* Mobile dropdown menu — absolutely positioned so it overlays the hero */}
         <div
           className="sm:hidden"
           style={{
@@ -1758,11 +1419,7 @@ export default function App() {
                     fontWeight: activeSection === id ? 500 : 400,
                   }}
                 >
-                  {id === "selected-work"
-                    ? "Projects"
-                    : id === "curated-words"
-                      ? "Literature"
-                      : id}
+                  {id === "selected-work" ? "Projects" : id}
                 </button>
               </li>
             ))}
@@ -1865,7 +1522,6 @@ export default function App() {
 
       <section id="selected-work" style={{ scrollMarginTop: "3.5rem" }}>
         <Container className="py-14 sm:py-24">
-          {/* Mobile section label */}
           <div className="flex sm:hidden mb-8">
             <span
               className="font-mono-code text-2xl font-bold tracking-[0.2em]"
@@ -1919,7 +1575,6 @@ export default function App() {
         </Container>
       </section>
 
-   
       <footer>
         <Container className="py-8 sm:py-12">
           <div className="flex flex-row items-center justify-between gap-5">
@@ -1989,9 +1644,6 @@ export default function App() {
           </div>
         </Container>
       </footer>
-      {selectedArticle && (
-        <ArticleModal article={selectedArticle} onClose={() => setSelectedArticle(null)} />
-      )}
     </div>
   )
 }

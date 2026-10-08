@@ -14,8 +14,6 @@
   --color-accent: var(--accent);
 }
 
-/* Palette: #E6DFD6 · #161311 · #FFFFFF · #000000 */
-
 :root {
   --background: #F7F5F0;
   --foreground: #161311;
@@ -45,14 +43,13 @@
   --muted-foreground: #E6E6E6;
   --border: rgba(230, 230, 230, 0.18);
   --accent: #8B3333;
-  /* dim text tiers — lower % keeps the subtle dark-mode look */
+
   --text-dim-1: color-mix(in srgb, var(--foreground) 38%, transparent);
   --text-dim-2: color-mix(in srgb, var(--foreground) 45%, transparent);
   --text-dim-3: color-mix(in srgb, var(--foreground) 55%, transparent);
   --text-dim-4: color-mix(in srgb, var(--foreground) 70%, transparent);
 }
 
-/* whole-element dim helpers */
 .dim-row { opacity: 0.85; }
 .dark .dim-row { opacity: 0.55; }
 
