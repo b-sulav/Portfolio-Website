@@ -212,83 +212,83 @@ const EXTRA_PROJECTS = [
   },
 ]
 
-const LITERATURE = [
-  {
-    id: 1,
-    title: "Fornlorn Reminisces",
-    tag: "Poem",
-    date: "Aug 2026",
-    excerpt:
-      "Bring down the skies,\nshatter heaven to pieces.",
-    readTime: "1 min",
-    link: "#",
-    body:
-      "Bring down the skies,\nshatter heaven to pieces.\nWalk upon tombs, graves\nFor a pile of yearning kisses.\n\nBurn hell to the ground,\nand every place it reaches.\nA Sanctuary for hopeless romantics\nand a shrine for forlorn reminisces.\n\nMuch needed compassion,\nA tearful, weary heart.\nLife teaching a lesson,\nAnd us falling apart.",
-  },
-  {
-    id: 2,
-    title: "के हुन्थ्यो होला?",
-    tag: "Poem",
-    date: "July 2026",
-    excerpt:
-      "यदि हृदयमा बग्दैनथ्यो भावनाको धारा।\nकहाँ जान्थे होला यी थाकेका हारा? ",
-    readTime: "2 min",
-    link: "#",
-    body:
-      "यदि हृदयमा बग्दैनथ्यो भावनाको धारा।\nयदि मस्तिष्कमा हुँदैनथ्यो मानवताको बास।\nकहाँ जान्थे होला यी थाकेका हारा?\nयदि हुँदैनथ्यो अस्तित्वको आस्थामा साहस।\n\nयदि कल्पनाको हुँदैनथ्यो कुनै वास्तविक अन्त्य।\nयदि पलको अन्धकारले रित्याउँदैनथ्यो विश्वास।\nके हुन्थ्यो होला पश्चात्तापी जीवनको सत्य?\nयदि हतासमा हुँदैनथ्यो मृत्युको आभास।",
-  },
-  {
-    id: 3,
-    title: "A burning florist ",
-    tag: "Poem",
-    date: "Nov 2025",
-    excerpt:
-      "I stood still as the fierce fire of longing raged,\nas the petals of mourning burned.",
-    readTime: "1 min",
-    link: "#",
-    body:
-      "I stood still as the fierce fire of longing raged,\nas the petals of mourning burned.\n\nI stood still and seemingly fazed,\nas the sepals of belonging darkened,\nas the smoke engulfed.\n\nI stood still as I gasped,\nas I was left lone,\nas there remained nothing but ashes,\nI stood still.",
-  },
-  {
-    id: 4,
-    title: "A dark night",
-    tag: "Poem",
-    date: "Jan 2025",
-    excerpt:
-      "The darkness of my shadow strives\nas I discover, a different me within myself.",
-    readTime: "1 min",
-    link: "#",
-    body:
-      "The darkness of my shadow strives\nas I discover, a different me within myself.\nliving in obscurity with gloomy eyes\nit has a gaze worth fright.\n\nThe light reaches every nook and corner\nyet fails to shine upon that silhouette,\nsome pleased by the ethereal beauty\nyet others are scared of its tenebrosity.\n",
-  },
-]
+// const LITERATURE = [
+//   {
+//     id: 1,
+//     title: "Fornlorn Reminisces",
+//     tag: "Poem",
+//     date: "Aug 2026",
+//     excerpt:
+//       "Bring down the skies,\nshatter heaven to pieces.",
+//     readTime: "1 min",
+//     link: "#",
+//     body:
+//       "Bring down the skies,\nshatter heaven to pieces.\nWalk upon tombs, graves\nFor a pile of yearning kisses.\n\nBurn hell to the ground,\nand every place it reaches.\nA Sanctuary for hopeless romantics\nand a shrine for forlorn reminisces.\n\nMuch needed compassion,\nA tearful, weary heart.\nLife teaching a lesson,\nAnd us falling apart.",
+//   },
+//   {
+//     id: 2,
+//     title: "के हुन्थ्यो होला?",
+//     tag: "Poem",
+//     date: "July 2026",
+//     excerpt:
+//       "यदि हृदयमा बग्दैनथ्यो भावनाको धारा।\nकहाँ जान्थे होला यी थाकेका हारा? ",
+//     readTime: "2 min",
+//     link: "#",
+//     body:
+//       "यदि हृदयमा बग्दैनथ्यो भावनाको धारा।\nयदि मस्तिष्कमा हुँदैनथ्यो मानवताको बास।\nकहाँ जान्थे होला यी थाकेका हारा?\nयदि हुँदैनथ्यो अस्तित्वको आस्थामा साहस।\n\nयदि कल्पनाको हुँदैनथ्यो कुनै वास्तविक अन्त्य।\nयदि पलको अन्धकारले रित्याउँदैनथ्यो विश्वास।\nके हुन्थ्यो होला पश्चात्तापी जीवनको सत्य?\nयदि हतासमा हुँदैनथ्यो मृत्युको आभास।",
+//   },
+//   {
+//     id: 3,
+//     title: "A burning florist ",
+//     tag: "Poem",
+//     date: "Nov 2025",
+//     excerpt:
+//       "I stood still as the fierce fire of longing raged,\nas the petals of mourning burned.",
+//     readTime: "1 min",
+//     link: "#",
+//     body:
+//       "I stood still as the fierce fire of longing raged,\nas the petals of mourning burned.\n\nI stood still and seemingly fazed,\nas the sepals of belonging darkened,\nas the smoke engulfed.\n\nI stood still as I gasped,\nas I was left lone,\nas there remained nothing but ashes,\nI stood still.",
+//   },
+//   {
+//     id: 4,
+//     title: "A dark night",
+//     tag: "Poem",
+//     date: "Jan 2025",
+//     excerpt:
+//       "The darkness of my shadow strives\nas I discover, a different me within myself.",
+//     readTime: "1 min",
+//     link: "#",
+//     body:
+//       "The darkness of my shadow strives\nas I discover, a different me within myself.\nliving in obscurity with gloomy eyes\nit has a gaze worth fright.\n\nThe light reaches every nook and corner\nyet fails to shine upon that silhouette,\nsome pleased by the ethereal beauty\nyet others are scared of its tenebrosity.\n",
+//   },
+// ]
 
-const EXTRA_LITERATURE = [
-  {
-    id: 5,
-    title: "तिमी",
-    tag: "Poem",
-    date: "Nov 2024",
-    excerpt:
-      "जीवनको हरेक पलमा छौ तिमी,\nसरिरको कण-कणमा छौ तिमी.",
-    readTime: "2 min",
-    link: "#",
-    body:
-      "जीवनको हरेक पलमा छौ तिमी,\nसरिरको कण-कणमा छौ तिमी.\nसासमा तिमी हरेक गासमा तिमी,\nविस्वास मर्दाको मेरो लासमा तिमी.\n\nपिडाको आगोमा जल्दै चिताको बासमा तिमी,\nभविष्य सम्म को यो इतिहासमा तिमी.\nस्वयम जीवनदेखि मृत्युसम्म,\nसुखदेखि नास सम्म केवल तिमी नै तिमी.",
-  },
-  {
-    id: 6,
-    title: "My love for you",
-    tag: "Poem",
-    date: "Sep 2023",
-    excerpt:
-      "My love for you is like a tattered, \nold canvas awaiting to be splashed with\nthe colours of life.",
-    readTime: "2 min",
-    link: "#",
-    body:
-      "My love for you is like a tattered, \nold canvas awaiting to be splashed with\nthe colours of life. \n\nMy love for you is like an old, \nfeeble man with eyes yet intact with, \nthe blaze of passion. \n\nMy love for you is like a starved, \npitiful stray still clenching onto,\nthe sparkle of hope.\n\nMy love for you is like a wilting,\nunnourished plant with faith in,\nthe miracles of heaven.",
-  },
-]
+// const EXTRA_LITERATURE = [
+//   {
+//     id: 5,
+//     title: "तिमी",
+//     tag: "Poem",
+//     date: "Nov 2024",
+//     excerpt:
+//       "जीवनको हरेक पलमा छौ तिमी,\nसरिरको कण-कणमा छौ तिमी.",
+//     readTime: "2 min",
+//     link: "#",
+//     body:
+//       "जीवनको हरेक पलमा छौ तिमी,\nसरिरको कण-कणमा छौ तिमी.\nसासमा तिमी हरेक गासमा तिमी,\nविस्वास मर्दाको मेरो लासमा तिमी.\n\nपिडाको आगोमा जल्दै चिताको बासमा तिमी,\nभविष्य सम्म को यो इतिहासमा तिमी.\nस्वयम जीवनदेखि मृत्युसम्म,\nसुखदेखि नास सम्म केवल तिमी नै तिमी.",
+//   },
+//   {
+//     id: 6,
+//     title: "My love for you",
+//     tag: "Poem",
+//     date: "Sep 2023",
+//     excerpt:
+//       "My love for you is like a tattered, \nold canvas awaiting to be splashed with\nthe colours of life.",
+//     readTime: "2 min",
+//     link: "#",
+//     body:
+//       "My love for you is like a tattered, \nold canvas awaiting to be splashed with\nthe colours of life. \n\nMy love for you is like an old, \nfeeble man with eyes yet intact with, \nthe blaze of passion. \n\nMy love for you is like a starved, \npitiful stray still clenching onto,\nthe sparkle of hope.\n\nMy love for you is like a wilting,\nunnourished plant with faith in,\nthe miracles of heaven.",
+//   },
+// ]
 
 function Sun() {
   return (
