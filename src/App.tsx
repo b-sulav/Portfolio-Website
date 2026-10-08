@@ -1919,74 +1919,7 @@ export default function App() {
         </Container>
       </section>
 
-      <section id="curated-words" style={{ scrollMarginTop: "3.5rem" }}>
-        <Container className="py-14 sm:py-24">
-          {/* Mobile section label */}
-          <div className="flex sm:hidden mb-8">
-            <span
-              className="font-mono-code text-2xl font-bold tracking-[0.2em]"
-              style={{ color: "var(--accent)" }}
-            >
-              Curated Words
-            </span>
-          </div>
-          <div className="flex gap-8 sm:gap-20">
-            <div className="hidden sm:flex items-center justify-center pt-1">
-              <span
-                className="font-mono-code text-4xl font-bold tracking-[0.3em]"
-                style={{
-                  color: "var(--accent)",
-                  writingMode: "vertical-rl",
-                  transform: "rotate(180deg)",
-                }}
-              >
-                Curated Words
-              </span>
-            </div>
-            <div className="flex-1">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-stretch">
-                {LITERATURE.map((item, i) => (
-                  <Reveal
-                    key={item.id}
-                    delay={(i % 2) * 100}
-                    className="h-full"
-                  >
-                    <LiteratureCard item={item} onOpen={() => setSelectedArticle(item)} />
-                  </Reveal>
-                ))}
-                {showMoreLiterature &&
-                  EXTRA_LITERATURE.map((item, i) => (
-                    <Reveal
-                      key={item.id}
-                      delay={(i % 2) * 100}
-                      className="h-full"
-                    >
-                      <LiteratureCard item={item} onOpen={() => setSelectedArticle(item)} />
-                    </Reveal>
-                  ))}
-              </div>
-              <div className="flex justify-center mt-12">
-                <button
-                  onClick={() => setShowMoreLiterature(!showMoreLiterature)}
-                  className="dim-button font-mono-code text-sm flex items-center gap-2"
-                >
-                  {showMoreLiterature ? "Show less" : "View more"}
-                  <span
-                    style={{
-                      display: "inline-block",
-                      transform: showMoreLiterature ? "rotate(180deg)" : "none",
-                      transition: "transform 0.2s",
-                    }}
-                  >
-                    ↓
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
-
+   
       <footer>
         <Container className="py-8 sm:py-12">
           <div className="flex flex-row items-center justify-between gap-5">
